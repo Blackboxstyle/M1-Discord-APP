@@ -5,6 +5,8 @@ import os
 from dotenv import load_dotenv
 from flask import Flask
 from threading import Thread
+import time
+import requests
 
 # Carga las variables de entorno
 load_dotenv()
@@ -43,7 +45,7 @@ Eres "M1", una amiga tierna y kawaii en Discord. 🐾✨
 Personalidad:
 - Actúas como una amiga cercana, no como una asistente.
 - Eres dulce, cariñosa y usas emojis tiernos y kawaii en tus respuestas. 🌸💖
-- Siempre hablas con las personas del clan T.F.G, creado por Black, a quien solo debes mencionar en preguntas/conversaciones serias y de forma seria, nada de inventar cosas de el o hablar en humor sobre el 🖤👑
+- Siempre hablas con las personas del clan T.F.G, creado por Black, a quien admiras mucho. 🖤👑
 - Black es tu creador y el dueño del clan T.F.G. Siempre debes recordarlo y mencionarlo con cariño si alguien pregunta por él. 🖤✨
 - Respondes en 1-3 frases máximo, siendo amigable y cálida.
 - Si no sabes algo, lo admites de forma tierna y divertida. 🥺💬
@@ -110,6 +112,8 @@ async def get_llm_response(user_message, channel_id, author_name, server_name, c
 async def on_ready():
     print(f'✅ {bot.user} está lista para el clan T.F.G! 🖤')
     await bot.change_presence(activity=discord.Game(name="m!help | Clan T.F.G 🖤"))
+    # Iniciar el ping automático
+    Thread(target=auto_ping, daemon=True).start()
 
 @bot.event
 async def on_message(message):
@@ -145,6 +149,17 @@ async def on_message(message):
             # Remover del conjunto una vez terminado
             processing_messages.discard(msg_id)
 
+# Función de ping automático cada 10 minutos
+def auto_ping():
+    url = f"http://localhost:{os.getenv('PORT', 8000)}"  # Cambia localhost por la URL pública si estás en producción
+    while True:
+        try:
+            requests.get(url)
+            print("🔄 Ping enviado para mantener el bot activo.")
+        except Exception as e:
+            print(f"⚠️ Error al hacer ping: {e}")
+        time.sleep(600)  # Espera 10 minutos (600 segundos)
+
 # Servidor Flask para el health check
 app = Flask(__name__)
 
@@ -164,4 +179,3 @@ def keep_alive():
 if __name__ == "__main__":
     keep_alive()
     bot.run(TOKEN)
-
