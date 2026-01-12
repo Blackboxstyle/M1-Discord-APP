@@ -3,7 +3,8 @@ from discord.ext import commands
 import aiohttp
 import os
 from dotenv import load_dotenv
-from keep_alive import keep_alive  # ¡Asegúrate de tener este archivo si corres en Repl.it o similar!
+from flask import Flask
+from threading import Thread
 
 # Carga las variables de entorno
 load_dotenv()
@@ -80,7 +81,6 @@ async def get_llm_response(user_message, channel_id, author_name, server_name, c
     }
 
     async with aiohttp.ClientSession() as session:
-        # ✅ CORREGIDO: URL limpia sin espacios
         async with session.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data) as response:
             result = await response.json()
             
@@ -132,7 +132,22 @@ async def on_message(message):
             print(f"❌ Error: {e}")
             await message.reply("Ups, tuve un problemita 🤖💔")
 
-# 🚀 INICIAR BOT
+# Servidor Flask para el health check
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "M1 AI está activa ✨"
+
+def run_flask():
+    port = int(os.getenv("PORT", 8000))
+    app.run(host="0.0.0.0", port=port)
+
+def keep_alive():
+    t = Thread(target=run_flask)
+    t.start()
+
+# Iniciar el bot
 if __name__ == "__main__":
-    keep_alive()  # ¡MANTIENE EL BOT VIVO EN FLY.IO O REPLIT!
+    keep_alive()
     bot.run(TOKEN)
