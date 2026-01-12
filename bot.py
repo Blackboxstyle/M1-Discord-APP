@@ -98,14 +98,18 @@ async def get_llm_response(user_message, channel_id, author_name, server_name, c
                 return "Lo siento, recibí una respuesta inesperada. 💫"
                 
             response_text = result["choices"][0]["message"]["content"].strip()
-            
+
+            # Limpiar la respuesta de tags de sistema que no deben mostrarse
+            response_text = response_text.replace("[INST]", "").replace("[/INST]", "").replace("<<SYS>>", "").replace("<</SYS>>", "")
+            response_text = response_text.strip()
+
             if channel_id not in message_history:
                 message_history[channel_id] = []
-            
+
             message_history[channel_id].append(f"{author_name}: {user_message}")
             message_history[channel_id].append(f"{bot_name}: {response_text}")
             message_history[channel_id] = message_history[channel_id][-50:]
-            
+
             return response_text
 
 @bot.event
