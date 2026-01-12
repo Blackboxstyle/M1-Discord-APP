@@ -155,13 +155,14 @@ async def on_message(message):
 
 # Función de ping automático cada 10 minutos
 def auto_ping():
-    url = f"http://localhost:{os.getenv('PORT', 8000)}"  # Cambia localhost por la URL pública si estás en producción
+    # Intentar usar una URL externa si está definida, sino usar localhost
+    url = os.getenv("PING_URL") or f"http://localhost:{os.getenv('PORT', 8000)}"
     while True:
         try:
             requests.get(url)
-            print("🔄 Ping enviado para mantener el bot activo.")
+            print(f"🔄 Ping enviado a {url}")
         except Exception as e:
-            print(f"⚠️ Error al hacer ping: {e}")
+            print(f"⚠️ Error al hacer ping a {url}: {e}")
         time.sleep(600)  # Espera 10 minutos (600 segundos)
 
 # Servidor Flask para el health check
@@ -183,3 +184,4 @@ def keep_alive():
 if __name__ == "__main__":
     keep_alive()
     bot.run(TOKEN)
+
