@@ -3,7 +3,7 @@ from discord.ext import commands
 import aiohttp
 import os
 from dotenv import load_dotenv
-from keep_alive import keep_alive  # ¡NUEVO!
+from keep_alive import keep_alive  # ¡Asegúrate de tener este archivo si corres en Repl.it o similar!
 
 # Carga las variables de entorno
 load_dotenv()
@@ -80,6 +80,7 @@ async def get_llm_response(user_message, channel_id, author_name, server_name, c
     }
 
     async with aiohttp.ClientSession() as session:
+        # ✅ CORREGIDO: URL limpia sin espacios
         async with session.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data) as response:
             result = await response.json()
             
@@ -133,5 +134,5 @@ async def on_message(message):
 
 # 🚀 INICIAR BOT
 if __name__ == "__main__":
-    keep_alive()  # ¡MANTIENE EL BOT VIVO EN FLY.IO!
+    keep_alive()  # ¡MANTIENE EL BOT VIVO EN FLY.IO O REPLIT!
     bot.run(TOKEN)
