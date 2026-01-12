@@ -28,6 +28,9 @@ bot = commands.Bot(command_prefix='m!', intents=intents)
 # Diccionario para almacenar el historial de mensajes por canal
 message_history = {}
 
+# Conjunto para evitar respuestas duplicadas
+processing_messages = set()
+
 def compress_history(history, max_messages=30):
     """Comprime el historial si es demasiado largo."""
     if len(history) <= max_messages:
@@ -117,6 +120,13 @@ async def on_message(message):
     if not user_message:
         return
 
+    # Verificar si el mensaje ya está siendo procesado
+    msg_id = f"{message.channel.id}-{message.id}"
+    if msg_id in processing_messages:
+        return  # Ignorar si ya está en proceso
+
+    processing_messages.add(msg_id)
+
     async with message.channel.typing():
         try:
             response = await get_llm_response(
@@ -131,6 +141,9 @@ async def on_message(message):
         except Exception as e:
             print(f"❌ Error: {e}")
             await message.reply("Ups, tuve un problemita 🤖💔")
+        finally:
+            # Remover del conjunto una vez terminado
+            processing_messages.discard(msg_id)
 
 # Servidor Flask para el health check
 app = Flask(__name__)
